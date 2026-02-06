@@ -37,4 +37,4 @@ jobs:
         with:
           app-name: kalkulator-nowy-20992
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
-          package: publish
+          package: ./publish
