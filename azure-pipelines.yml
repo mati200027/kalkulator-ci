@@ -1,0 +1,59 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+- checkout: self
+
+# --- Frontend: Sass + minify (npm) ---
+- task: NodeTool@0
+  inputs:
+    versionSpec: '20.x'
+  displayName: 'Use Node.js 20.x'
+
+- script: npm ci
+  displayName: 'npm ci'
+  workingDirectory: '$(Build.SourcesDirectory)'
+
+- script: npm run build:assets
+  displayName: 'npm run build:assets (sass -> css + minify)'
+  workingDirectory: '$(Build.SourcesDirectory)'
+
+# --- Backend: .NET 8 ---
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '8.x'
+  displayName: 'Use .NET SDK 8.x'
+
+- script: dotnet restore Kalkulator.sln
+  displayName: 'dotnet restore'
+
+- script: dotnet build Kalkulator.sln -c $(buildConfiguration) --no-restore
+  displayName: 'dotnet build'
+
+- script: dotnet publish Kalkulator.csproj -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)/publish
+  displayName: 'dotnet publish'
+
+# ZIP do wdrożenia
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/publish'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
+    replaceExistingArchive: true
+  displayName: 'Archive app.zip'
+
+# --- Deploy do Azure App Service ---
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'sc-azure-kalkulator'   # <-- TU wpiszesz nazwę Service Connection
+    appName: 'kalkulator-nowy-20992'          # <-- Twoja nazwa App Service
+    package: '$(Build.ArtifactStagingDirectory)/app.zip'
+  displayName: 'Deploy to Azure App Service'
