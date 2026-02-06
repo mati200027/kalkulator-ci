@@ -13,11 +13,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -29,8 +24,13 @@ jobs:
       - name: Build frontend assets (sass + minify)
         run: npm run build:assets
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
       - name: Build and publish .NET app
-        run: dotnet publish -c Release -o publish
+        run: dotnet publish Kalkulator.csproj -c Release -o publish
 
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
