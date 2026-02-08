@@ -38,6 +38,16 @@ jobs:
       - name: Build and publish .NET app
         run: dotnet publish Kalkulator.csproj -c Release -o publish
 
+      # ✅ DEBUG: sprawdza, czy secret istnieje i nie jest pusty
+      - name: Debug - check publish profile secret is present
+        run: |
+          if [ -z "${{ secrets.AZURE_PUBLISH_PROFILE }}" ]; then
+            echo "AZURE_PUBLISH_PROFILE is EMPTY or NOT AVAILABLE"
+            exit 1
+          else
+            echo "AZURE_PUBLISH_PROFILE is PRESENT (not empty)"
+          fi
+
       # 7. Deploy do Azure App Service
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
