@@ -20,9 +20,9 @@ jobs:
         with:
           node-version: '20'
 
-      # 3. Instalacja zależności npm
+      # 3. Instalacja zależności npm (reproducible)
       - name: Install npm dependencies
-        run: npm install
+        run: npm ci
 
       # 4. Build frontend (Sass → CSS + minifikacja)
       - name: Build frontend assets
@@ -44,4 +44,4 @@ jobs:
         with:
           app-name: kalkulator-nowy-20992
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
-          package: ./publish
+          package: publish
