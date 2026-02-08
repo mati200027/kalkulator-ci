@@ -10,35 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Pobranie kodu z repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Node.js (npm, sass, terser, cleancss)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # 3. Instalacja zależności npm (reproducible)
       - name: Install npm dependencies
         run: npm ci
 
-      # 4. Build frontend (Sass → CSS + minifikacja)
       - name: Build frontend assets
         run: npm run build:assets
 
-      # 5. .NET SDK
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
-      # 6. Publish aplikacji ASP.NET Core
       - name: Build and publish .NET app
         run: dotnet publish Kalkulator.csproj -c Release -o publish
 
-      # ✅ DEBUG: sprawdza, czy secret istnieje i nie jest pusty
       - name: Debug - check publish profile secret is present
         run: |
           if [ -z "${{ secrets.AZURE_PUBLISH_PROFILE }}" ]; then
@@ -48,10 +41,9 @@ jobs:
             echo "AZURE_PUBLISH_PROFILE is PRESENT (not empty)"
           fi
 
-      # 7. Deploy do Azure App Service
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
           app-name: kalkulator-nowy-20992
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
-          package: publish
+          package: ./publish
